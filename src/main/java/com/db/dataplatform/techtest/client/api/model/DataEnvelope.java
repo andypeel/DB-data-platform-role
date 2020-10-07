@@ -14,8 +14,8 @@ import javax.validation.constraints.NotNull;
 public class DataEnvelope {
 
     @NotNull
-    private DataHeader dataHeader;
+    private final DataHeader dataHeader;
 
     @NotNull
-    private DataBody dataBody;
+    private final DataBody dataBody;
 }

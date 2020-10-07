@@ -1,5 +1,6 @@
 package com.db.dataplatform.techtest.api.model;
 
+import com.db.dataplatform.techtest.common.Md5Hasher;
 import com.db.dataplatform.techtest.server.api.model.DataBody;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +15,7 @@ public class DataBodyTests {
 
     @Test
     public void assignDataBodyFieldsShouldWorkAsExpected() {
-        DataBody dataBody = new DataBody(DUMMY_DATA);
+        DataBody dataBody = new DataBody(DUMMY_DATA, Md5Hasher.generateHash(DUMMY_DATA));
 
         assertThat(dataBody).isNotNull();
         assertThat(dataBody.getDataBody()).isEqualTo(DUMMY_DATA);

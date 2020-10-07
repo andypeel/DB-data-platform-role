@@ -1,5 +1,6 @@
 package com.db.dataplatform.techtest.server.component.impl;
 
+import com.db.dataplatform.techtest.common.Md5Hasher;
 import com.db.dataplatform.techtest.server.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.server.persistence.model.DataBodyEntity;
 import com.db.dataplatform.techtest.server.persistence.model.DataHeaderEntity;
@@ -25,11 +26,20 @@ public class ServerImpl implements Server {
     @Override
     public boolean saveDataEnvelope(DataEnvelope envelope) {
 
-        // Save to persistence.
-        persist(envelope);
+        // Requirement: invalid data is wasted space, i.e. don't persist if invalid
 
-        log.info("Data persisted successfully, data name: {}", envelope.getDataHeader().getName());
-        return true;
+        String recalculatedHash = Md5Hasher.generateHash(envelope.getDataBody().getDataBody());
+        if (recalculatedHash.equalsIgnoreCase(envelope.getDataBody().getChecksum())) {
+            persist(envelope);
+            log.info("Data persisted successfully, data name: {}", envelope.getDataHeader().getName());
+            return true;
+        }
+
+        log.info("Incoming checksum didn't match rehash of content, data name: {}. Incoming={} but recalculated={}",
+                envelope.getDataHeader().getName(),
+                envelope.getDataBody().getChecksum(),
+                recalculatedHash);
+        return false;
     }
 
     private void persist(DataEnvelope envelope) {

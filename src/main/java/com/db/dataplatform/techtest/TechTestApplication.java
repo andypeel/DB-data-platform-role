@@ -53,13 +53,15 @@ public class TechTestApplication {
 
 	private void pushData() throws JsonProcessingException {
 
-		DataBody dataBody = new DataBody(DUMMY_DATA);
+		DataBody dataBody = new DataBody(DUMMY_DATA, MD5_CHECKSUM);
 
 		DataHeader dataHeader = new DataHeader(HEADER_NAME, BlockTypeEnum.BLOCKTYPEA);
 
 		DataEnvelope dataEnvelope = new DataEnvelope(dataHeader, dataBody);
 
-		client.pushData(dataEnvelope);
+		boolean hashMatch = client.pushData(dataEnvelope);
+
+		System.out.println(hashMatch);
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.db.dataplatform.techtest;
 
+import com.db.dataplatform.techtest.common.Md5Hasher;
 import com.db.dataplatform.techtest.server.api.model.DataBody;
 import com.db.dataplatform.techtest.server.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.server.api.model.DataHeader;
@@ -31,17 +32,16 @@ public class TestDataHelper {
     }
 
     public static DataEnvelope createTestDataEnvelopeApiObject() {
-        DataBody dataBody = new DataBody(DUMMY_DATA);
-        DataHeader dataHeader = new DataHeader(TEST_NAME, BlockTypeEnum.BLOCKTYPEA);
-
-        DataEnvelope dataEnvelope = new DataEnvelope(dataHeader, dataBody);
-        return dataEnvelope;
+        return createTestDataEnvelopeApiObject(TEST_NAME, DUMMY_DATA, Md5Hasher.generateHash(DUMMY_DATA), BlockTypeEnum.BLOCKTYPEA);
     }
 
     public static DataEnvelope createTestDataEnvelopeApiObjectWithEmptyName() {
-        DataBody dataBody = new DataBody(DUMMY_DATA);
-        DataHeader dataHeader = new DataHeader(TEST_NAME_EMPTY, BlockTypeEnum.BLOCKTYPEA);
+        return createTestDataEnvelopeApiObject(TEST_NAME_EMPTY, DUMMY_DATA, Md5Hasher.generateHash(DUMMY_DATA), BlockTypeEnum.BLOCKTYPEA);
+    }
 
+    public static DataEnvelope createTestDataEnvelopeApiObject(String name, String body, String checksum, BlockTypeEnum blockType) {
+        DataBody dataBody = new DataBody(body, checksum);
+        DataHeader dataHeader = new DataHeader(name, blockType);
         DataEnvelope dataEnvelope = new DataEnvelope(dataHeader, dataBody);
         return dataEnvelope;
     }

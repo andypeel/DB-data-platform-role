@@ -7,7 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public interface Client {
-    void pushData(DataEnvelope dataEnvelope) throws JsonProcessingException;
+    boolean pushData(DataEnvelope dataEnvelope) throws JsonProcessingException;
     List<DataEnvelope> getData(String blockType);
     boolean updateData(String blockName, String newBlockType) throws UnsupportedEncodingException;
 }

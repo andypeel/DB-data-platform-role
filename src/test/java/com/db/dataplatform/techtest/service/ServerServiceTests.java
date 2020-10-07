@@ -1,7 +1,10 @@
 package com.db.dataplatform.techtest.service;
 
+import com.db.dataplatform.techtest.TestDataHelper;
+import com.db.dataplatform.techtest.common.Md5Hasher;
 import com.db.dataplatform.techtest.server.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.server.mapper.ServerMapperConfiguration;
+import com.db.dataplatform.techtest.server.persistence.BlockTypeEnum;
 import com.db.dataplatform.techtest.server.persistence.model.DataBodyEntity;
 import com.db.dataplatform.techtest.server.persistence.model.DataHeaderEntity;
 import com.db.dataplatform.techtest.server.service.DataBodyService;
@@ -19,6 +22,8 @@ import java.security.NoSuchAlgorithmException;
 
 import static com.db.dataplatform.techtest.TestDataHelper.createTestDataEnvelopeApiObject;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ServerServiceTests {
@@ -50,6 +55,15 @@ public class ServerServiceTests {
         boolean success = server.saveDataEnvelope(testDataEnvelope);
 
         assertThat(success).isTrue();
-        //verify(dataBodyServiceImplMock, times(1)).saveDataBody(eq(expectedDataBodyEntity));
+        verify(dataBodyServiceImplMock, times(1)).saveDataBody(expectedDataBodyEntity);
+    }
+
+    @Test
+    public void shouldNotSaveDataEnvelopeWhenChecksumDoesNotMatch() throws NoSuchAlgorithmException, IOException {
+        DataEnvelope envelopeWithBadHash = createTestDataEnvelopeApiObject(TestDataHelper.TEST_NAME, TestDataHelper.DUMMY_DATA, "invalid-hash", BlockTypeEnum.BLOCKTYPEA);
+        boolean success = server.saveDataEnvelope(envelopeWithBadHash);
+
+        assertThat(success).isFalse();
+        verify(dataBodyServiceImplMock, times(0)).saveDataBody(expectedDataBodyEntity);
     }
 }

@@ -34,5 +34,4 @@ public class ServerController {
         log.info("Data envelope persisted. Attribute name: {}", dataEnvelope.getDataHeader().getName());
         return ResponseEntity.ok(checksumPass);
     }
-
 }

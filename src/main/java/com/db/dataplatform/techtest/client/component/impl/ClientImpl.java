@@ -4,7 +4,6 @@ import com.db.dataplatform.techtest.client.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.client.component.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
@@ -28,10 +27,11 @@ public class ClientImpl implements Client {
     private final RestTemplate restTemplate;
 
     @Override
-    public void pushData(DataEnvelope dataEnvelope) {
+    public boolean pushData(DataEnvelope dataEnvelope) {
         log.debug("Pushing data {} to {}", dataEnvelope.getDataHeader().getName(), URI_PUSHDATA);
-        Boolean success = restTemplate.postForObject(URI.create(URI_PUSHDATA), dataEnvelope, Boolean.class);
-        log.info("Pushed data {} to {} with success {}", dataEnvelope.getDataHeader().getName(), URI_PUSHDATA, success);
+        Boolean hashMatch = restTemplate.postForObject(URI.create(URI_PUSHDATA), dataEnvelope, Boolean.class);
+        log.info("Pushed data {} to {} with hashMatch {}", dataEnvelope.getDataHeader().getName(), URI_PUSHDATA, hashMatch);
+        return hashMatch;
     }
 
     @Override
@@ -45,6 +45,4 @@ public class ClientImpl implements Client {
         log.info("Updating blocktype to {} for block with name {}", newBlockType, blockName);
         return true;
     }
-
-
 }

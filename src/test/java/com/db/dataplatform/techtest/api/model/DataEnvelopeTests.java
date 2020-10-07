@@ -1,5 +1,6 @@
 package com.db.dataplatform.techtest.api.model;
 
+import com.db.dataplatform.techtest.common.Md5Hasher;
 import com.db.dataplatform.techtest.server.api.model.DataBody;
 import com.db.dataplatform.techtest.server.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.server.api.model.DataHeader;
@@ -18,7 +19,7 @@ public class DataEnvelopeTests {
     @Test
     public void assignDataHeaderFieldsShouldWorkAsExpected() {
         DataHeader dataHeader = new DataHeader(TEST_NAME, BlockTypeEnum.BLOCKTYPEA);
-        DataBody dataBody = new DataBody(DUMMY_DATA);
+        DataBody dataBody = new DataBody(DUMMY_DATA, Md5Hasher.generateHash(DUMMY_DATA));
 
         DataEnvelope dataEnvelope = new DataEnvelope(dataHeader, dataBody);
 
