@@ -3,6 +3,7 @@ package com.db.dataplatform.techtest.server.persistence.model;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,6 +23,7 @@ import java.time.Instant;
 @Setter
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class DataBodyEntity {
 
     @Id

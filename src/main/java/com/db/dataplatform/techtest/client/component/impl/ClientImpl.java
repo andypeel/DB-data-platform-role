@@ -1,9 +1,13 @@
 package com.db.dataplatform.techtest.client.component.impl;
 
+import com.db.dataplatform.techtest.client.api.model.DataBody;
 import com.db.dataplatform.techtest.client.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.client.component.Client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
@@ -36,8 +40,16 @@ public class ClientImpl implements Client {
 
     @Override
     public List<DataEnvelope> getData(String blockType) {
-        log.info("Query for data with header block type {}", blockType);
-        return null;
+        log.debug("Querying for data with header block type {}", blockType);
+
+        ResponseEntity<List<DataEnvelope>> result = restTemplate.exchange(
+                URI_GETDATA.expand(blockType),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<DataEnvelope>>() {
+                });
+        log.info("Queried for data with header block type {} and found {} results", blockType, result.getBody().size());
+        return result.getBody();
     }
 
     @Override

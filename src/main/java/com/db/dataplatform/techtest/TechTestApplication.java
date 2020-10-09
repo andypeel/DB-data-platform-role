@@ -47,8 +47,8 @@ public class TechTestApplication {
 	}
 
 	private void queryData() {
-
 		List<DataEnvelope> data = client.getData(BlockTypeEnum.BLOCKTYPEA.name());
+		System.out.println(data);
 	}
 
 	private void pushData() throws JsonProcessingException {

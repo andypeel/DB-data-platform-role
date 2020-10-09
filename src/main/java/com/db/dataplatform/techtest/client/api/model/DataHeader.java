@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
@@ -12,6 +13,7 @@ import javax.validation.constraints.NotNull;
 @JsonDeserialize(as = DataHeader.class)
 @Getter
 @RequiredArgsConstructor
+@ToString
 public class DataHeader {
 
     @NotNull
