@@ -3,6 +3,7 @@ package com.db.dataplatform.techtest.server.api.controller;
 import com.db.dataplatform.techtest.server.api.model.DataBody;
 import com.db.dataplatform.techtest.server.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.server.component.Server;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -12,6 +13,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -44,4 +47,15 @@ public class ServerController {
         log.info("getData called for block type {} and {} results were found", blockType, result.size());
         return ResponseEntity.ok(result);
     }
+
+    @PutMapping(value = "/update/{name}/{newBlockType}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Boolean> updateBlockType(@PathVariable("name") @NotNull @NotBlank String blockName,
+                                                   @PathVariable("newBlockType") @NotNull String newBlockType) throws IOException {
+
+        log.debug("updateBlockType called for name {} with new block type: {}", blockName, newBlockType);
+        Boolean result = server.updateBlockType(blockName, newBlockType);
+
+        log.debug("updateBlockType called for name {} with new block type: {} and result {}", blockName, newBlockType, result);
+        return ResponseEntity.ok(result);
+       }
 }

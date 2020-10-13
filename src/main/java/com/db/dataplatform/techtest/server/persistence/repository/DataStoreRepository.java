@@ -7,10 +7,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DataStoreRepository extends JpaRepository<DataBodyEntity, Long> {
 
     @Query("SELECT body from DataBodyEntity body WHERE body.dataHeaderEntity.blocktype = ?1")
     List<DataBodyEntity> findByBlockType(BlockTypeEnum blockTypeEnum);
+
+    @Query("SELECT body from DataBodyEntity body WHERE body.dataHeaderEntity.name = ?1")
+    Optional<DataBodyEntity> findByBlockName(String blockName);
 }

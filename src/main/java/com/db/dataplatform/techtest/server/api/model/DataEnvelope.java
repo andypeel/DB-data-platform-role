@@ -23,5 +23,6 @@ public class DataEnvelope {
     private DataHeader dataHeader;
 
     @NotNull
+    @Valid
     private DataBody dataBody;
 }

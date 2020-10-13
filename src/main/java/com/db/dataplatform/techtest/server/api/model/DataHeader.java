@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @JsonSerialize(as = DataHeader.class)
 @JsonDeserialize(as = DataHeader.class)
@@ -19,6 +20,6 @@ public class DataHeader {
     @NotBlank
     private String name;
 
+    @NotNull
     private BlockTypeEnum blockType;
-
 }

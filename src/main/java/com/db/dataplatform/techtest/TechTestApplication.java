@@ -44,6 +44,7 @@ public class TechTestApplication {
 
 	private void updateData() throws UnsupportedEncodingException {
 		boolean success = client.updateData(HEADER_NAME, BlockTypeEnum.BLOCKTYPEB.name());
+		System.out.println("Result of update: " + success);
 	}
 
 	private void queryData() {

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -57,6 +58,19 @@ public class ServerImpl implements Server {
         return result;
     }
 
+    @Override
+    public boolean updateBlockType(String blockName, String newBlockType) {
+
+        //NOTE: I've taken the preexisting DataBodyService.getDataByBlockName() method signature as a hint
+        //and used it in my implementation. But really this would be better updated using an optimistic lock
+        Optional<DataBodyEntity> bodyEntityOptional = dataBodyServiceImpl.getDataByBlockName(blockName);
+        return bodyEntityOptional.map(entity -> {
+            entity.getDataHeaderEntity().setBlocktype(BlockTypeEnum.of(newBlockType));
+            return true;
+        }).orElse(false);
+    }
+
+    // Probably the result here should be paged, depending on expected number of matching blocks
     private List<DataEnvelope> map(List<DataBodyEntity> entities) {
         List<DataEnvelope> result = new ArrayList<>(entities.size());
         for (DataBodyEntity entity : entities) {

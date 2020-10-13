@@ -54,7 +54,15 @@ public class ClientImpl implements Client {
 
     @Override
     public boolean updateData(String blockName, String newBlockType) {
-        log.info("Updating blocktype to {} for block with name {}", newBlockType, blockName);
-        return true;
+        log.debug("Updating blocktype to {} for block with name {}", newBlockType, blockName);
+
+        ResponseEntity<Boolean> result = restTemplate.exchange(
+                URI_PATCHDATA.expand(blockName, newBlockType),
+                HttpMethod.PUT,
+                null,
+                Boolean.class);
+
+        log.debug("Updated blocktype to {} for block with name {} with result {}", newBlockType, blockName, result);
+        return result.getBody();
     }
 }
