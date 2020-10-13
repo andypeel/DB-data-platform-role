@@ -4,30 +4,51 @@ import com.db.dataplatform.techtest.common.Md5Hasher;
 import com.db.dataplatform.techtest.server.api.model.DataBody;
 import com.db.dataplatform.techtest.server.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.server.api.model.DataHeader;
-import com.db.dataplatform.techtest.server.mapper.ServerMapperConfiguration;
 import com.db.dataplatform.techtest.server.persistence.BlockTypeEnum;
 import com.db.dataplatform.techtest.server.persistence.model.DataBodyEntity;
 import com.db.dataplatform.techtest.server.persistence.model.DataHeaderEntity;
 import com.db.dataplatform.techtest.server.service.DataBodyService;
 import com.db.dataplatform.techtest.server.component.Server;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ServerImpl implements Server {
 
     private final DataBodyService dataBodyServiceImpl;
     private final ModelMapper modelMapper;
+    private final String hadoopLocation;
+    private final ArrayBlockingQueue<DataEnvelope> hadoopQueue;
+    private final Executor hadoopQueueExecutor;
+    private final RestTemplate restTemplate;
+
+    // Spring @Value injection doesn't work with Lombok, so use an explicit constructor
+    public ServerImpl(DataBodyService dataBodyServiceImpl,
+               ModelMapper modelMapper,
+               @Value("${hadoop.location}") String hadoopLocation,
+               RestTemplate restTemplate) {
+        this.dataBodyServiceImpl = dataBodyServiceImpl;
+        this.modelMapper = modelMapper;
+        this.hadoopLocation = hadoopLocation;
+        this.restTemplate = restTemplate;
+
+        hadoopQueue = new ArrayBlockingQueue<>(1000);
+        hadoopQueueExecutor = Executors.newFixedThreadPool(1);
+        hadoopQueueExecutor.execute(() -> sendToHadoop());
+    }
 
     /**
      * @param envelope
@@ -39,6 +60,7 @@ public class ServerImpl implements Server {
         String recalculatedHash = Md5Hasher.generateHash(envelope.getDataBody().getDataBody());
         if (recalculatedHash.equalsIgnoreCase(envelope.getDataBody().getChecksum())) {
             persist(envelope);
+            queueForSendingToHadoop(envelope);
             log.info("Data persisted successfully, data name: {}", envelope.getDataHeader().getName());
             return true;
         }
@@ -95,4 +117,42 @@ public class ServerImpl implements Server {
         dataBodyServiceImpl.saveDataBody(dataBodyEntity);
     }
 
+    /**
+     * Decouple the send to Hadoop, so our API users don't have to wait for it to complete before can
+     * receive a response from us. Do so in a bounded way, to avoid running out of memory.
+     * @param envelope
+     */
+    private void queueForSendingToHadoop(DataEnvelope envelope) {
+        if (!hadoopQueue.offer(envelope)) {
+            // There is some kind of problem with the thread sending data to Hadoop. Log and move on as we
+            // don't want to be tightly coupled to this new experimental system.
+            log.warn("Unable to add {} to Hadoop queue as the queue is full", envelope);
+        }
+    }
+
+    private void sendToHadoop() {
+        while (true) {
+            try {
+                DataEnvelope envelope = hadoopQueue.take();
+                doHttpSend(envelope);
+            } catch (InterruptedException e) {
+                log.info("Hadoop queue consumer thread interrupted");
+                // Assume we're being stopped - propagate and exit
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+
+    private void doHttpSend(DataEnvelope envelope) {
+        // Could do a back off and retry with an increasing period, for a limited number of attempts.
+        // What's the requirement?
+        ResponseEntity<Void> result = restTemplate.postForEntity(hadoopLocation, envelope, Void.class);
+        if (result.getStatusCode() != HttpStatus.OK) {
+            log.error("Failed to send envelope to Hadoop. Status code {}",
+                    result.getStatusCode());
+        } else {
+            log.info("Successfully posted envelope to Hadoop {}", envelope);
+        }
+    }
 }
